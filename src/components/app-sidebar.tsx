@@ -19,20 +19,13 @@ import { usePathname } from "next/navigation";
 
 // Menu items
 const navItems = [
-  { title: "الخدمات",    url: "/dashboard/projects",
-    icon: Briefcase,
-  },
-  {
-    title: "طلبات العروض",
-    url: "/dashboard/quotes",
-    icon: FileText,
-  },
+  { title: "الخدمات", url: "/dashboard/services", icon: Briefcase },
   { title: "المعرض", url: "/dashboard/gallery", icon: ImageIcon },
-  { title: "بيانات التواصل", url: "/dashboard/contact", icon: Contact },
-  { title: "المدونة", url: "/dashboard/blog", icon: FileText },
-  { title: "شهادات العملاء", url: "/dashboard/testimonials", icon: Star },
   { title: "المشاريع", url: "/dashboard/projects", icon: FolderOpen },
   { title: "طلبات العروض", url: "/dashboard/quotes", icon: ClipboardList },
+  { title: "شهادات العملاء", url: "/dashboard/testimonials", icon: Star },
+  { title: "المدونة", url: "/dashboard/blog", icon: FileText },
+  { title: "بيانات التواصل", url: "/dashboard/contact", icon: Contact },
 ];
 
 export function AppSidebar({ user }: { user: any }) {
