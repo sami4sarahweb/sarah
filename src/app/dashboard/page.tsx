@@ -10,12 +10,10 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="flex flex-col min-h-screen p-8">
-      <header className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">لوحة التحكم</h1>
-        <form action={logout}>
-          <Button variant="outline" type="submit">تسجيل الخروج</Button>
-        </form>
+    <div className="flex flex-col gap-6">
+      <header className="mb-4">
+        <h1 className="text-3xl font-bold">نظرة عامة</h1>
+        <p className="text-muted-foreground mt-2">مرحباً بك في لوحة التحكم الإدارية.</p>
       </header>
 
       <main>

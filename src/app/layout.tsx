@@ -10,6 +10,8 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 export const metadata: Metadata = {
   title: "Synthetic Pulse App",
   description: "A high-performance bio-interface",
@@ -34,10 +36,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="absolute top-4 inline-end-4 z-50">
-            <ThemeToggle />
-          </div>
-          {children}
+          <TooltipProvider>
+            <div className="absolute top-4 inline-end-4 z-50">
+              <ThemeToggle />
+            </div>
+            {children}
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
