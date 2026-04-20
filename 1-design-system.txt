@@ -1,0 +1,159 @@
+```markdown
+
+# Design System Specification: High-End Digital Experience
+
+ 
+
+## 1. Overview & Creative North Star: "The Synthetic Pulse"
+
+This design system is built upon the **Creative North Star: The Synthetic Pulse**. We are moving away from the "flat web" toward a tactile, hyper-futuristic environment that feels alive. This system mimics a high-performance bio-interface—where data isn't just displayed; it’s projected. 
+
+ 
+
+We break the "template" look through **intentional asymmetry and atmospheric depth**. Instead of rigid 12-column grids, we use overlapping glass layers and "breathing" containers that bleed into the background. The visual signature is defined by the tension between clinical precision (ultra-modern typography) and organic energy (vibrant neon glows).
+
+ 
+
+---
+
+ 
+
+## 2. Color & Atmospheric Surface Hierarchy
+
+The palette is rooted in an abyss-like `background` (`#0b0e15`), designed to make the neon accents feel like light-emitting diodes rather than static colors.
+
+ 
+
+### The "No-Line" Rule
+
+**Explicit Instruction:** Do not use 1px solid borders to define sections. Boundaries are created through:
+
+- **Tonal Shifts:** Placing a `surface-container-high` element on a `surface-container` background.
+
+- **Luminous Edge Lighting:** Instead of a border, use a subtle 1px inner-glow using the `primary` (`#8ff5ff`) or `secondary` (`#ff51fa`) tokens at 15% opacity.
+
+ 
+
+### Surface Hierarchy & Nesting
+
+Treat the UI as a series of stacked, frosted glass panes. 
+
+1. **Base Layer:** `surface` (`#0b0e15`) - The deep foundation.
+
+2. **Intermediate Layer:** `surface-container` (`#161a22`) - Standard layout blocks.
+
+3. **Elevated Layer:** `surface-container-highest` (`#212630`) - Active widgets or interactive hubs.
+
+4. **Nesting:** Always ensure that nested elements move *up* the scale (High → Highest) to create a natural, physical sense of lift.
+
+ 
+
+### The "Glass & Gradient" Rule
+
+Floating elements must utilize **Glassmorphism 2.0**.
+
+- **Fill:** `surface-variant` (`#212630`) at 40% to 60% opacity.
+
+- **Effect:** `backdrop-filter: blur(24px)`.
+
+- **Signature Texture:** Primary CTAs should utilize a linear gradient from `primary` (`#8ff5ff`) to `primary-container` (`#00eefc`) at a 135-degree angle to provide "visual soul."
+
+ 
+
+---
+
+ 
+
+## 3. Typography: The Editorial Tech Aesthetic
+
+We pair the technical precision of **Space Grotesk** with the humanistic clarity of **Manrope**.
+
+ 
+
+- **Display & Headlines (Space Grotesk):** These are your "data anchors." Use `display-lg` (3.5rem) with tight letter-spacing (-0.04em) to create an authoritative, editorial feel. These should feel like headers in a high-end futuristic dossier.
+
+- **Body (Manrope):** Use `body-lg` (1rem) for all long-form data. Manrope provides a necessary warmth against the cold, dark UI, ensuring the interface remains legible during high-cognition tasks.
+
+- **Labels (Space Grotesk):** `label-md` (0.75rem) should always be in All-Caps with a +0.1em letter-spacing. This evokes a "read-out" or "HUD" aesthetic.
+
+ 
+
+---
+
+ 
+
+## 4. Elevation & Depth: Tonal Layering
+
+Traditional shadows are forbidden. We use **Luminous Depth**.
+
+ 
+
+- **The Layering Principle:** Achieve hierarchy by stacking. A `surface-container-lowest` card placed on a `surface-container-low` section creates a recessed, "carved" effect.
+
+- **Ambient Glows:** For floating "Modular Action Hubs," use a shadow with a blur of 40px, set to 6% opacity, using the `primary` color token instead of black. This mimics the light spill of a neon screen.
+
+- **The "Ghost Border" Fallback:** If a container requires a boundary for accessibility, use `outline-variant` (`#454850`) at 20% opacity. This creates a "barely-there" structural hint.
+
+ 
+
+---
+
+ 
+
+## 5. Signature Components & Widgets
+
+ 
+
+### Custom Widgets
+
+- **Bio-metric Data Visualizers:** These utilize the `tertiary` (Toxic Lime) color. They are non-linear; use radial blurs and SVG paths that feel organic and fluid rather than rigid bar charts.
+
+- **Modular Action Hubs:** Large-scale glass containers (`xl` roundedness) that house groups of buttons. They use the "Glass & Gradient" rule to sit above the main content flow.
+
+- **Dynamic Flow Connectors:** Instead of lines, use 2px wide gradients (`primary` to `transparent`) with a `flicker` animation to connect related data points.
+
+ 
+
+### Primitive Components
+
+- **Buttons:** 
+
+  - **Primary:** Gradient fill (`primary` to `primary-container`) with a `primary` glow on hover. Roundedness: `md`.
+
+  - **Secondary:** Transparent fill with a "Ghost Border." Text in `secondary` (`#ff51fa`).
+
+- **Input Fields:** No background. Use a `surface-container-high` bottom-only border (2px). When focused, the border transitions to `primary` with a 4px outer glow.
+
+- **Cards:** Forbid divider lines. Separate content using `xl` vertical spacing or by nesting a `surface-container-highest` block within a `surface-container` card.
+
+- **Chips:** Use `full` roundedness. Background: `surface-bright` at 20% opacity. Text: `on-surface-variant`.
+
+ 
+
+---
+
+ 
+
+## 6. Do's and Don'ts
+
+ 
+
+### Do
+
+- **Do** use `primary`, `secondary`, and `tertiary` accents sparingly. They are "light sources," not background fills.
+
+- **Do** embrace negative space. The high-contrast dark theme requires "room to breathe" to prevent visual fatigue.
+
+- **Do** use overlapping elements. Let a glass widget partially cover a data visualization to create a sense of three-dimensional space.
+
+ 
+
+### Don't
+
+- **Don't** use 100% opaque, solid borders. It breaks the "Synthetic Pulse" illusion.
+
+- **Don't** use pure white (#ffffff) for text. Always use `on-surface` (`#e3e5f0`) to maintain the atmospheric, cinematic tone.
+
+- **Don't** use standard "Material" or "Bootstrap" spacing. Use exaggerated vertical rhythms to emphasize the editorial nature of the system.
+
+- **Don't** use traditional drop shadows. If it doesn't look like it's emitting light or catching a reflection, it doesn't belong in this system.
