@@ -19,7 +19,14 @@ import { usePathname } from "next/navigation";
 
 // Menu items
 const navItems = [
-  { title: "الخدمات", url: "/dashboard/services", icon: Briefcase },
+  { title: "الخدمات",    url: "/dashboard/projects",
+    icon: Briefcase,
+  },
+  {
+    title: "طلبات العروض",
+    url: "/dashboard/quotes",
+    icon: FileText,
+  },
   { title: "المعرض", url: "/dashboard/gallery", icon: ImageIcon },
   { title: "بيانات التواصل", url: "/dashboard/contact", icon: Contact },
   { title: "المدونة", url: "/dashboard/blog", icon: FileText },

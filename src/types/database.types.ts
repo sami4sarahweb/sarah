@@ -220,6 +220,45 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_requests: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          details: string
+          email: string | null
+          event_date: string | null
+          event_type: string | null
+          full_name: string
+          id: string
+          phone: string
+          status: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          details: string
+          email?: string | null
+          event_date?: string | null
+          event_type?: string | null
+          full_name: string
+          id?: string
+          phone: string
+          status?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          details?: string
+          email?: string | null
+          event_date?: string | null
+          event_type?: string | null
+          full_name?: string
+          id?: string
+          phone?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       service_media: {
         Row: {
           created_at: string
