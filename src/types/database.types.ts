@@ -100,6 +100,126 @@ export type Database = {
           },
         ]
       }
+      project_media: {
+        Row: {
+          created_at: string
+          id: string
+          media_id: string
+          project_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_id: string
+          project_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_id?: string
+          project_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_media_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_media_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_services: {
+        Row: {
+          created_at: string
+          project_id: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_services_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          client_name: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          event_date: string | null
+          id: string
+          is_active: boolean | null
+          main_image_url: string | null
+          slug: string
+          sort_order: number | null
+          testimonial_rating: number | null
+          testimonial_text: string | null
+          title: string
+        }
+        Insert: {
+          client_name?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          main_image_url?: string | null
+          slug: string
+          sort_order?: number | null
+          testimonial_rating?: number | null
+          testimonial_text?: string | null
+          title: string
+        }
+        Update: {
+          client_name?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          main_image_url?: string | null
+          slug?: string
+          sort_order?: number | null
+          testimonial_rating?: number | null
+          testimonial_text?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       service_media: {
         Row: {
           created_at: string
