@@ -100,6 +100,135 @@ export type Database = {
           },
         ]
       }
+      service_media: {
+        Row: {
+          created_at: string
+          id: string
+          media_id: string
+          property_id: string | null
+          role: string | null
+          service_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_id: string
+          property_id?: string | null
+          role?: string | null
+          service_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_id?: string
+          property_id?: string | null
+          role?: string | null
+          service_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_media_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_media_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "service_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_media_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_properties: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          service_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          service_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          service_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_properties_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          details: string | null
+          icon_name: string | null
+          id: string
+          is_active: boolean | null
+          main_image_url: string | null
+          name: string
+          slug: string
+          sort_order: number | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          details?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          main_image_url?: string | null
+          name: string
+          slug: string
+          sort_order?: number | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          details?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          main_image_url?: string | null
+          name?: string
+          slug?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -238,4 +367,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

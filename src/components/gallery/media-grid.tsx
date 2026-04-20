@@ -22,11 +22,15 @@ export function MediaGrid({
   items,
   categories,
   onDelete,
+  onSelect,
+  actionMode,
   filterPrimaryType = "all", // "image" | "video" | "all"
 }: {
   items: GalleryMedia[];
   categories: GalleryCategory[];
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onSelect?: (item: GalleryMedia) => void;
+  actionMode?: "delete" | "select" | "none";
   filterPrimaryType?: "image" | "video" | "all";
 }) {
   const [search, setSearch] = useState("");
@@ -58,6 +62,8 @@ export function MediaGrid({
 
     return true;
   });
+
+  const resolvedActionMode = onDelete ? "delete" : actionMode || "none";
 
   return (
     <div className="flex flex-col gap-4">
@@ -125,7 +131,15 @@ export function MediaGrid({
             }
 
             return (
-              <Card key={item.id} className="overflow-hidden group glass-panel flex flex-col">
+              <Card 
+                key={item.id} 
+                className={`overflow-hidden group glass-panel flex flex-col ${resolvedActionMode === 'select' ? 'cursor-pointer hover:border-primary transition-colors' : ''}`}
+                onClick={() => {
+                  if (resolvedActionMode === 'select' && onSelect) {
+                    onSelect(item);
+                  }
+                }}
+              >
                 <div className="relative aspect-video bg-black/10 overflow-hidden">
                   {/* Aspect adjustments for 'short' videos visually in grid */}
                   <img 
@@ -149,15 +163,19 @@ export function MediaGrid({
                   </div>
 
                   {/* Actions Overlay */}
-                  <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button 
-                      variant="destructive" 
-                      size="icon-sm" 
-                      onClick={() => onDelete(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {resolvedActionMode !== "none" && (
+                    <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {resolvedActionMode === "delete" && typeof onDelete === "function" && (
+                        <Button 
+                          variant="destructive" 
+                          size="icon-sm" 
+                          onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <CardContent className="p-3 flex-1 flex flex-col">
