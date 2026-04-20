@@ -19,9 +19,9 @@ export default async function SignupPage({
       <Card className="w-full max-w-sm">
         <form action={signup}>
           <CardHeader>
-            <CardTitle className="text-2xl">Sign Up</CardTitle>
+            <CardTitle className="text-2xl">إنشاء حساب</CardTitle>
             <CardDescription>
-              Create an account to get started.
+              قم بإنشاء حساب للبدء.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -36,20 +36,20 @@ export default async function SignupPage({
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Input id="email" name="email" type="email" placeholder="m@example.com" required dir="ltr" className="text-left" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
+              <Label htmlFor="password">كلمة المرور</Label>
+              <Input id="password" name="password" type="password" required dir="ltr" className="text-left" />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button className="w-full" type="submit">Sign up</Button>
+            <Button className="w-full" type="submit">إنشاء حساب</Button>
             <div className="text-sm text-center text-muted-foreground w-full">
-              Already have an account?{' '}
+              لديك حساب بالفعل؟{' '}
               <Link href="/login" className="underline underline-offset-4 hover:text-primary">
-                Log in
+                تسجيل الدخول
               </Link>
             </div>
           </CardFooter>

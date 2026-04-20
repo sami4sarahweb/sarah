@@ -11,7 +11,7 @@ export async function login(formData: FormData) {
   const password = formData.get('password') as string
 
   if (!email || !password) {
-    redirect('/login?error=Email and password are required')
+    redirect('/login?error=البريد الإلكتروني وكلمة المرور مطلوبان')
   }
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -20,7 +20,7 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`)
+    redirect(`/login?error=${encodeURIComponent('بيانات الدخول غير صحيحة')}`)
   }
 
   revalidatePath('/dashboard', 'layout')
@@ -34,7 +34,7 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string
 
   if (!email || !password) {
-    redirect('/signup?error=Email and password are required')
+    redirect('/signup?error=البريد الإلكتروني وكلمة المرور مطلوبان')
   }
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
@@ -51,7 +51,7 @@ export async function signup(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`)
   }
 
-  redirect('/signup?message=Check your email to continue sign in process')
+  redirect('/signup?message=يرجى التحقق من بريدك الإلكتروني لإكمال عملية التسجيل')
 }
 
 export async function logout() {

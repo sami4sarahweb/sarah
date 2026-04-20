@@ -26,5 +26,5 @@ export async function GET(request: Request) {
   }
 
   // return the user to an error page with some instructions
-  return NextResponse.redirect(`${origin}/login?error=Invalid+or+expired+confirmation+link`)
+  return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('رابط التأكيد غير صالح أو منتهي الصلاحية')}`)
 }
