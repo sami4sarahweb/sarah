@@ -46,18 +46,29 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          parent_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          parent_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          parent_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "gallery_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gallery_media: {
         Row: {
@@ -220,6 +231,39 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_request_services: {
+        Row: {
+          created_at: string | null
+          quote_request_id: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          quote_request_id: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string | null
+          quote_request_id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_request_services_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_request_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_requests: {
         Row: {
           company_name: string | null
@@ -315,6 +359,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          gallery_category_id: string | null
           id: string
           name: string
           service_id: string
@@ -323,6 +368,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          gallery_category_id?: string | null
           id?: string
           name: string
           service_id: string
@@ -331,12 +377,20 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          gallery_category_id?: string | null
           id?: string
           name?: string
           service_id?: string
           sort_order?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "service_properties_gallery_category_id_fkey"
+            columns: ["gallery_category_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "service_properties_service_id_fkey"
             columns: ["service_id"]
@@ -352,6 +406,7 @@ export type Database = {
           created_at: string
           description: string | null
           details: string | null
+          gallery_category_id: string | null
           icon_name: string | null
           id: string
           is_active: boolean | null
@@ -365,6 +420,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           details?: string | null
+          gallery_category_id?: string | null
           icon_name?: string | null
           id?: string
           is_active?: boolean | null
@@ -378,6 +434,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           details?: string | null
+          gallery_category_id?: string | null
           icon_name?: string | null
           id?: string
           is_active?: boolean | null
@@ -386,7 +443,15 @@ export type Database = {
           slug?: string
           sort_order?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "services_gallery_category_id_fkey"
+            columns: ["gallery_category_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -9,9 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { arSA } from "date-fns/locale";
-import { Phone, Mail, Building2, Calendar, MessageSquare, Clock } from "lucide-react";
+import { Phone, Mail, Building2, Calendar, MessageSquare, Clock, Briefcase } from "lucide-react";
 
-type QuoteRequest = Database['public']['Tables']['quote_requests']['Row'];
+type QuoteRequest = Database['public']['Tables']['quote_requests']['Row'] & {
+  quote_request_services?: { service_id: string; services: { name: string } | null }[];
+};
 
 const STATUS_MAP = {
   'new': { label: 'جديد', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
@@ -28,7 +30,7 @@ export default function QuotesDashboard() {
 
   const fetchQuotes = async () => {
     setLoading(true);
-    let query = supabase.from("quote_requests").select("*").order("created_at", { ascending: false });
+    let query = supabase.from("quote_requests").select("*, quote_request_services(service_id, services(name))").order("created_at", { ascending: false });
     
     if (filter !== 'all') {
       query = query.eq("status", filter);
@@ -142,6 +144,23 @@ export default function QuotesDashboard() {
                       </div>
                     )}
                   </div>
+
+                  {/* Selected Services */}
+                  {quote.quote_request_services && quote.quote_request_services.length > 0 && (
+                    <div className="mt-1">
+                      <div className="flex items-center gap-1 mb-2 text-foreground/80">
+                        <Briefcase className="w-4 h-4" />
+                        <span className="text-xs font-bold">الخدمات المطلوبة:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {quote.quote_request_services.map((qs) => (
+                          <Badge key={qs.service_id} variant="secondary" className="text-[10px] border-primary/20">
+                            {qs.services?.name || "—"}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Details */}
                   <div className="mt-2 text-muted-foreground">
