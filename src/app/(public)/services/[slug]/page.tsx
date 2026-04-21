@@ -63,8 +63,16 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   const mediaItems = [...(service.service_media as MediaJoin[] || [])]
     .filter((m) => m.gallery_media)
-    .sort((a, b) => 0)
     .map((m) => m.gallery_media!);
+
+  // Fetch other services for "related services" navigation
+  const { data: otherServices } = await supabase
+    .from("services")
+    .select("name, slug, description, main_image_url")
+    .eq("is_active", true)
+    .neq("slug", slug)
+    .order("sort_order", { ascending: true })
+    .limit(4);
 
   return (
     <div className="min-h-screen bg-background">
@@ -218,6 +226,41 @@ export default async function ServiceDetailPage({ params }: Props) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ RELATED SERVICES ═══════════════ */}
+      {otherServices && otherServices.length > 0 && (
+        <section className="py-20 border-t border-border/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-foreground mb-4">خدمات أخرى قد تهمك</h2>
+              <p className="text-muted-foreground">تصفح بقية خدماتنا المتخصصة في تجهيز الفعاليات</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {otherServices.map((s) => (
+                <Link
+                  key={s.slug}
+                  href={`/services/${s.slug}`}
+                  className="group glass-panel rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="h-32 bg-gradient-to-br from-surface-container-high to-surface-container overflow-hidden flex items-center justify-center">
+                    {s.main_image_url ? (
+                      <img src={s.main_image_url} alt={s.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                    ) : (
+                      <ImageIcon className="w-8 h-8 text-primary/20" />
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-foreground group-hover:text-primary transition-colors text-sm mb-1">{s.name}</h3>
+                    {s.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
