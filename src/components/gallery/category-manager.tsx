@@ -65,7 +65,7 @@ export function CategoryManager({
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <form onSubmit={handleAdd} className="flex gap-2">
-          <Select value={parentId} onValueChange={setParentId} disabled={loading}>
+          <Select value={parentId} onValueChange={(val) => setParentId(val ?? "none")} disabled={loading}>
             <SelectTrigger className="w-1/3">
               <SelectValue placeholder="التصنيف الأب (اختياري)" />
             </SelectTrigger>

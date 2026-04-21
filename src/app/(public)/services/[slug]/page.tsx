@@ -49,7 +49,7 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   const { data: service } = await supabase
     .from("services")
-    .select("*, service_properties(*), service_media(*, gallery_media(*))")
+    .select("*, service_properties(*, gallery_category_id), service_media(*, gallery_media(*))")
     .eq("slug", slug)
     .single();
 
@@ -61,9 +61,41 @@ export default async function ServiceDetailPage({ params }: Props) {
     (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
   );
 
-  const mediaItems = [...(service.service_media as MediaJoin[] || [])]
+  // Direct service_media links
+  const directMedia = [...(service.service_media as MediaJoin[] || [])]
     .filter((m) => m.gallery_media)
     .map((m) => m.gallery_media!);
+
+  // Also fetch media from the service's assigned gallery_category_id (+ subcategories)
+  let categoryMedia: typeof directMedia = [];
+  if (service.gallery_category_id) {
+    // Get subcategory IDs too
+    const { data: subCats } = await supabase
+      .from("gallery_categories")
+      .select("id")
+      .eq("parent_id", service.gallery_category_id);
+    
+    const catIds = [service.gallery_category_id, ...(subCats?.map(c => c.id) || [])];
+    
+    const { data: catMedia } = await supabase
+      .from("gallery_media")
+      .select("id, type, url, thumbnail_url, title, description")
+      .in("category_id", catIds)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    
+    if (catMedia) categoryMedia = catMedia;
+  }
+
+  // Merge and deduplicate by id
+  const seenIds = new Set(directMedia.map(m => m.id));
+  const mediaItems = [...directMedia];
+  for (const cm of categoryMedia) {
+    if (!seenIds.has(cm.id)) {
+      mediaItems.push(cm);
+      seenIds.add(cm.id);
+    }
+  }
 
   // Fetch other services for "related services" navigation
   const { data: otherServices } = await supabase
