@@ -14,7 +14,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Search, Trash2, Video, Image as ImageIcon } from "lucide-react";
+import { Search, Trash2, Video, Image as ImageIcon, Check } from "lucide-react";
 
 export type GalleryMedia = Database['public']['Tables']['gallery_media']['Row'];
 
@@ -23,19 +23,44 @@ export function MediaGrid({
   categories,
   onDelete,
   onSelect,
+  onMultiSelect,
   actionMode,
-  filterPrimaryType = "all", // "image" | "video" | "all"
+  filterPrimaryType = "all",
+  selectedIds: externalSelectedIds,
 }: {
   items: GalleryMedia[];
   categories: GalleryCategory[];
   onDelete?: (id: string) => void;
   onSelect?: (item: GalleryMedia) => void;
-  actionMode?: "delete" | "select" | "none";
+  onMultiSelect?: (items: GalleryMedia[]) => void;
+  actionMode?: "delete" | "select" | "multi-select" | "none";
   filterPrimaryType?: "image" | "video" | "all";
+  selectedIds?: string[];
 }) {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedVideoType, setSelectedVideoType] = useState<string>("all"); // all, youtube_wide, youtube_short
+  const [selectedVideoType, setSelectedVideoType] = useState<string>("all");
+  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
+
+  const selectedSet = externalSelectedIds ? new Set(externalSelectedIds) : internalSelectedIds;
+
+  const toggleSelection = (item: GalleryMedia) => {
+    setInternalSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(item.id)) {
+        next.delete(item.id);
+      } else {
+        next.add(item.id);
+      }
+      return next;
+    });
+  };
+
+  const confirmMultiSelect = () => {
+    const selected = items.filter((i) => internalSelectedIds.has(i.id));
+    onMultiSelect?.(selected);
+    setInternalSelectedIds(new Set());
+  };
 
   // Filter Logic
   const filteredItems = items.filter((item) => {
@@ -130,13 +155,21 @@ export function MediaGrid({
               }
             }
 
+            const isSelected = selectedSet.has(item.id);
+
             return (
               <Card 
                 key={item.id} 
-                className={`overflow-hidden group glass-panel flex flex-col ${resolvedActionMode === 'select' ? 'cursor-pointer hover:border-primary transition-colors' : ''}`}
+                className={`overflow-hidden group glass-panel flex flex-col ${
+                  resolvedActionMode === 'select' || resolvedActionMode === 'multi-select'
+                    ? 'cursor-pointer hover:border-primary transition-colors' 
+                    : ''
+                } ${isSelected ? 'ring-2 ring-primary border-primary' : ''}`}
                 onClick={() => {
                   if (resolvedActionMode === 'select' && onSelect) {
                     onSelect(item);
+                  } else if (resolvedActionMode === 'multi-select') {
+                    toggleSelection(item);
                   }
                 }}
               >
@@ -154,6 +187,15 @@ export function MediaGrid({
                     }}
                   />
                   
+                  {/* Multi-select checkbox */}
+                  {resolvedActionMode === 'multi-select' && (
+                    <div className={`absolute top-2 left-2 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all z-10 ${
+                      isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border backdrop-blur-md'
+                    }`}>
+                      {isSelected && <Check className="w-4 h-4 text-black" />}
+                    </div>
+                  )}
+
                   {/* Badges Overlay */}
                   <div className="absolute top-2 right-2 flex gap-1">
                     <Badge variant="secondary" className="bg-background/80 backdrop-blur-md">
@@ -190,6 +232,22 @@ export function MediaGrid({
               </Card>
             )
           })}
+        </div>
+      )}
+
+      {/* Multi-select confirm bar */}
+      {resolvedActionMode === 'multi-select' && internalSelectedIds.size > 0 && (
+        <div className="sticky bottom-0 bg-surface-container/95 backdrop-blur-md border border-border/50 rounded-xl p-3 flex items-center justify-between">
+          <span className="text-sm font-semibold">تم تحديد {internalSelectedIds.size} عنصر</span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setInternalSelectedIds(new Set())}>
+              إلغاء
+            </Button>
+            <Button size="sm" onClick={confirmMultiSelect} className="gap-2">
+              <Check className="w-4 h-4" />
+              تأكيد الاختيار
+            </Button>
+          </div>
         </div>
       )}
     </div>

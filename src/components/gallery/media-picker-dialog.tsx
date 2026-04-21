@@ -9,17 +9,35 @@ import { UploadForm } from "./upload-image-modal";
 import { ImagePlus, Video, FolderOpen, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function MediaPickerDialog({
-  onSelect,
-  filterPrimaryType = "all",
-  triggerButton,
-  title = "اختر من المعرض"
-}: {
-  onSelect: (item: GalleryMedia) => void;
+// ── Overloaded props: single-select vs multi-select ──
+type BaseProps = {
   filterPrimaryType?: "image" | "video" | "all";
   triggerButton?: React.ReactElement;
   title?: string;
-}) {
+};
+
+type SingleProps = BaseProps & {
+  multiple?: false;
+  onSelect: (item: GalleryMedia) => void;
+  onMultiSelect?: never;
+};
+
+type MultiProps = BaseProps & {
+  multiple: true;
+  onSelect?: never;
+  onMultiSelect: (items: GalleryMedia[]) => void;
+};
+
+type MediaPickerDialogProps = SingleProps | MultiProps;
+
+export function MediaPickerDialog(props: MediaPickerDialogProps) {
+  const {
+    filterPrimaryType = "all",
+    triggerButton,
+    title = "اختر من المعرض",
+    multiple = false,
+  } = props;
+
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"browse" | "upload">("browse");
   const [media, setMedia] = useState<GalleryMedia[]>([]);
@@ -43,21 +61,37 @@ export function MediaPickerDialog({
     }
   }, [open]);
 
-  const handleSelect = (item: GalleryMedia) => {
-    onSelect(item);
-    setOpen(false);
+  // Single select handler
+  const handleSingleSelect = (item: GalleryMedia) => {
+    if (!multiple && props.onSelect) {
+      props.onSelect(item);
+      setOpen(false);
+    }
   };
 
-  const handleUploadSuccess = (items: GalleryMedia[]) => {
-    // Auto-select the first uploaded item
-    if (items.length === 1) {
-      onSelect(items[0]);
+  // Multi select handler (from MediaGrid confirm)
+  const handleMultiSelect = (items: GalleryMedia[]) => {
+    if (multiple && props.onMultiSelect) {
+      props.onMultiSelect(items);
       setOpen(false);
-    } else if (items.length > 0) {
-      // Multiple items uploaded — refresh browse tab and switch to it
-      // so user can pick which one they want
-      setMedia((prev) => [...items, ...prev]);
-      setTab("browse");
+    }
+  };
+
+  // Upload success handler
+  const handleUploadSuccess = (items: GalleryMedia[]) => {
+    if (multiple && props.onMultiSelect) {
+      // In multi mode, auto-confirm all uploaded items
+      props.onMultiSelect(items);
+      setOpen(false);
+    } else if (!multiple && props.onSelect) {
+      if (items.length === 1) {
+        props.onSelect(items[0]);
+        setOpen(false);
+      } else if (items.length > 0) {
+        // Multiple uploaded but single-select mode — refresh browse and let user pick
+        setMedia((prev) => [...items, ...prev]);
+        setTab("browse");
+      }
     }
   };
 
@@ -109,8 +143,9 @@ export function MediaPickerDialog({
             <MediaGrid
               items={media}
               categories={categories}
-              actionMode="select"
-              onSelect={handleSelect}
+              actionMode={multiple ? "multi-select" : "select"}
+              onSelect={multiple ? undefined : handleSingleSelect}
+              onMultiSelect={multiple ? handleMultiSelect : undefined}
               filterPrimaryType={filterPrimaryType}
             />
           ) : (

@@ -153,15 +153,16 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
     setSaving(false);
   };
 
-  // ── Service-level media ──
-  const attachServiceMedia = async (galleryItem: GalleryMedia) => {
+  // ── Service-level media (bulk) ──
+  const attachServiceMedia = async (items: GalleryMedia[]) => {
     if (isNew) { alert("الرجاء حفظ الخدمة أولاً"); return; }
-    await supabase.from("service_media").insert({
+    const rows = items.map((item, i) => ({
       service_id: resolvedParams.id,
-      media_id: galleryItem.id,
+      media_id: item.id,
       role: 'gallery',
-      sort_order: serviceMedia.length,
-    });
+      sort_order: serviceMedia.length + i,
+    }));
+    await supabase.from("service_media").insert(rows);
     loadServiceData();
   };
 
@@ -170,16 +171,17 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
     loadServiceData();
   };
 
-  // ── Property-level media ──
-  const attachPropertyMedia = async (propertyId: string, galleryItem: GalleryMedia) => {
+  // ── Property-level media (bulk) ──
+  const attachPropertyMedia = async (propertyId: string, items: GalleryMedia[]) => {
     if (isNew) { alert("الرجاء حفظ الخدمة أولاً"); return; }
-    await supabase.from("service_media").insert({
+    const rows = items.map((item, i) => ({
       service_id: resolvedParams.id,
       property_id: propertyId,
-      media_id: galleryItem.id,
+      media_id: item.id,
       role: 'property_gallery',
-      sort_order: 0,
-    });
+      sort_order: i,
+    }));
+    await supabase.from("service_media").insert(rows);
     loadServiceData();
   };
 
@@ -327,9 +329,10 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
                         </div>
                       ))}
                       <MediaPickerDialog
-                        title="إرفاق صورة للخاصية"
+                        title="إرفاق صور للخاصية"
                         filterPrimaryType="image"
-                        onSelect={(item) => attachPropertyMedia(prop.id, item)}
+                        multiple
+                        onMultiSelect={(items) => attachPropertyMedia(prop.id, items)}
                         triggerButton={
                           <button className="w-16 h-16 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
                             <ImagePlus className="w-4 h-4" />
@@ -413,12 +416,13 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
                 <CardTitle>معرض الخدمة</CardTitle>
                 <MediaPickerDialog
                   title="إرفاق"
+                  multiple
+                  onMultiSelect={attachServiceMedia}
                   triggerButton={
                     <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-full">
                       <Plus className="w-4 h-4" />
                     </Button>
                   }
-                  onSelect={attachServiceMedia}
                 />
               </CardHeader>
               <CardContent>
