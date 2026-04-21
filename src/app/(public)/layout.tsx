@@ -1,19 +1,22 @@
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { CookieConsent } from "@/components/layout/cookie-consent";
+import { getPublicSiteData } from "@/lib/queries/public-data";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const siteData = await getPublicSiteData();
+
   return (
     <div className="flex flex-col min-h-screen">
-      <PublicHeader />
+      <PublicHeader siteData={siteData} />
       <main className="flex-1">
         {children}
       </main>
-      <PublicFooter />
+      <PublicFooter siteData={siteData} />
       <CookieConsent />
     </div>
   );
