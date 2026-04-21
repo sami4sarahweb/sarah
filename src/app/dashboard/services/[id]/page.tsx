@@ -10,9 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowRight, Save, Image as ImageIcon, Trash2, Plus } from "lucide-react";
+import { ArrowRight, Save, Image as ImageIcon, Trash2, Plus, ImagePlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+// Property with its media items
+interface PropertyWithMedia extends ServiceProperty {
+  media: (ServiceMedia & { gallery_media: GalleryMedia })[];
+}
 
 export default function ServiceEditor({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -23,8 +28,8 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
   const [service, setService] = useState<Partial<Service>>({
     name: "", slug: "", description: "", details: "", is_active: true, sort_order: 0
   });
-  const [properties, setProperties] = useState<Partial<ServiceProperty>[]>([]);
-  const [mediaRelations, setMediaRelations] = useState<(ServiceMedia & { gallery_media: GalleryMedia })[]>([]);
+  const [properties, setProperties] = useState<PropertyWithMedia[]>([]);
+  const [serviceMedia, setServiceMedia] = useState<(ServiceMedia & { gallery_media: GalleryMedia })[]>([]);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
 
@@ -36,26 +41,32 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
 
   const loadServiceData = async () => {
     setLoading(true);
-    
+
     // 1. Fetch Service
     const { data: sData } = await supabase.from("services").select("*").eq("id", resolvedParams.id).single();
     if (sData) setService(sData);
 
     // 2. Fetch Properties
     const { data: pData } = await supabase.from("service_properties").select("*").eq("service_id", resolvedParams.id).order("sort_order");
-    if (pData) setProperties(pData);
 
-    // 3. Fetch Media Join
+    // 3. Fetch all Media relations (both service-level and property-level)
     const { data: mData } = await supabase
       .from("service_media")
       .select("*, gallery_media(*)")
       .eq("service_id", resolvedParams.id)
       .order("sort_order");
-    
-    if (mData) {
-      // @ts-ignore
-      setMediaRelations(mData.filter(m => m.gallery_media !== null));
-    }
+
+    const allMedia = (mData || []).filter((m: any) => m.gallery_media !== null) as (ServiceMedia & { gallery_media: GalleryMedia })[];
+
+    // Service-level media (no property_id)
+    setServiceMedia(allMedia.filter(m => !m.property_id));
+
+    // Map properties with their media
+    const propsWithMedia: PropertyWithMedia[] = (pData || []).map(p => ({
+      ...p,
+      media: allMedia.filter(m => m.property_id === p.id),
+    }));
+    setProperties(propsWithMedia);
 
     setLoading(false);
   };
@@ -64,8 +75,8 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
     setSaving(true);
     try {
       let currentId = resolvedParams.id;
-      
-      // Save Service Table
+
+      // Save Service
       if (isNew) {
         const { data, error } = await supabase.from("services").insert({
           name: service.name || "",
@@ -92,27 +103,48 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
         }).eq("id", currentId);
       }
 
-      // Upsert Properties
-      // Simple approach: delete existing and insert new (for a real app, careful with linked media, but here properties only have text)
+      // ── Upsert Properties (preserve IDs to keep media links) ──
+      const existingIds = properties.filter(p => p.id).map(p => p.id);
+
+      // Delete removed properties (those in DB but not in current list)
       if (!isNew) {
-        await supabase.from("service_properties").delete().eq("service_id", currentId);
-      }
-      
-      if (properties.length > 0) {
-        const propsToInsert = properties.map((p, i) => ({
-          service_id: currentId,
-          name: p.name || "",
-          description: p.description || null,
-          sort_order: i
-        }));
-        await supabase.from("service_properties").insert(propsToInsert);
+        const { data: dbProps } = await supabase
+          .from("service_properties")
+          .select("id")
+          .eq("service_id", currentId);
+
+        const toDelete = (dbProps || []).filter(dp => !existingIds.includes(dp.id)).map(dp => dp.id);
+        if (toDelete.length > 0) {
+          await supabase.from("service_media").delete().in("property_id", toDelete);
+          await supabase.from("service_properties").delete().in("id", toDelete);
+        }
       }
 
-      // Redirect if new
+      // Upsert each property
+      for (let i = 0; i < properties.length; i++) {
+        const prop = properties[i];
+        if (prop.id) {
+          // Update existing
+          await supabase.from("service_properties").update({
+            name: prop.name || "",
+            description: prop.description || null,
+            sort_order: i,
+          }).eq("id", prop.id);
+        } else {
+          // Insert new
+          await supabase.from("service_properties").insert({
+            service_id: currentId,
+            name: prop.name || "",
+            description: prop.description || null,
+            sort_order: i,
+          });
+        }
+      }
+
       if (isNew) {
         router.push(`/dashboard/services/${currentId}`);
       } else {
-        loadServiceData(); // Reload to get fresh IDs for properties
+        loadServiceData();
       }
     } catch (e) {
       console.error(e);
@@ -121,16 +153,14 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
     setSaving(false);
   };
 
-  const attachMedia = async (galleryItem: GalleryMedia) => {
-    if (isNew) {
-      alert("الرجاء حفظ الخدمة أولاً قبل إضافة الوسائط");
-      return;
-    }
+  // ── Service-level media ──
+  const attachServiceMedia = async (galleryItem: GalleryMedia) => {
+    if (isNew) { alert("الرجاء حفظ الخدمة أولاً"); return; }
     await supabase.from("service_media").insert({
       service_id: resolvedParams.id,
       media_id: galleryItem.id,
       role: 'gallery',
-      sort_order: mediaRelations.length
+      sort_order: serviceMedia.length,
     });
     loadServiceData();
   };
@@ -138,6 +168,33 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
   const detachMedia = async (relationId: string) => {
     await supabase.from("service_media").delete().eq("id", relationId);
     loadServiceData();
+  };
+
+  // ── Property-level media ──
+  const attachPropertyMedia = async (propertyId: string, galleryItem: GalleryMedia) => {
+    if (isNew) { alert("الرجاء حفظ الخدمة أولاً"); return; }
+    await supabase.from("service_media").insert({
+      service_id: resolvedParams.id,
+      property_id: propertyId,
+      media_id: galleryItem.id,
+      role: 'property_gallery',
+      sort_order: 0,
+    });
+    loadServiceData();
+  };
+
+  // ── Add new empty property ──
+  const addProperty = () => {
+    setProperties([...properties, {
+      id: "",
+      service_id: resolvedParams.id,
+      name: "",
+      description: null,
+      sort_order: properties.length,
+      created_at: new Date().toISOString(),
+      gallery_category_id: null,
+      media: [],
+    }]);
   };
 
   if (loading) {
@@ -165,7 +222,7 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Main Details */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           <Card className="glass-panel">
@@ -176,24 +233,24 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className="text-sm">اسم الخدمة (عربي)</label>
-                  <Input 
-                    value={service.name} 
+                  <Input
+                    value={service.name}
                     onChange={e => setService({ ...service, name: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-sm">رابط URL (Slug / إنجليزي)</label>
-                  <Input 
-                    value={service.slug} 
+                  <Input
+                    value={service.slug}
                     onChange={e => setService({ ...service, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
                   />
                 </div>
               </div>
-              
+
               <div className="flex flex-col gap-2">
                 <label className="text-sm">وصف قصير (للبطاقات)</label>
-                <Textarea 
-                  value={service.description || ''} 
+                <Textarea
+                  value={service.description || ''}
                   onChange={e => setService({ ...service, description: e.target.value })}
                   rows={2}
                 />
@@ -201,8 +258,8 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm">التفاصيل الكاملة</label>
-                <Textarea 
-                  value={service.details || ''} 
+                <Textarea
+                  value={service.details || ''}
                   onChange={e => setService({ ...service, details: e.target.value })}
                   rows={5}
                 />
@@ -210,41 +267,81 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
             </CardContent>
           </Card>
 
+          {/* Properties Section */}
           <Card className="glass-panel">
             <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle>خصائص الخدمة / الأنواع المندرجة</CardTitle>
                 <CardDescription>أضف الخصائص مثل "كنب فردي"، "خيام شفافة" الخ</CardDescription>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setProperties([...properties, { name: "" }])}
-              >
+              <Button variant="outline" size="sm" onClick={addProperty}>
                 <Plus className="w-4 h-4 ml-2" />
                 إضافة خاصية
               </Button>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-4">
               {properties.map((prop, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-surface-container-high/50 p-2 rounded-lg border border-border/20">
-                  <Input 
-                    placeholder="اسم الخاصية" 
-                    value={prop.name}
-                    onChange={e => {
-                      const newProps = [...properties];
-                      newProps[idx].name = e.target.value;
-                      setProperties(newProps);
-                    }}
-                    className="flex-1 bg-background"
-                  />
-                  <Button 
-                    variant="destructive" 
-                    size="icon" 
-                    onClick={() => setProperties(properties.filter((_, i) => i !== idx))}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                <div
+                  key={prop.id || `new-${idx}`}
+                  className="bg-surface-container-high/50 p-4 rounded-xl border border-border/20 flex flex-col gap-3"
+                >
+                  {/* Property name & delete */}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="اسم الخاصية"
+                      value={prop.name}
+                      onChange={e => {
+                        const newProps = [...properties];
+                        newProps[idx] = { ...newProps[idx], name: e.target.value };
+                        setProperties(newProps);
+                      }}
+                      className="flex-1 bg-background"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => setProperties(properties.filter((_, i) => i !== idx))}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Property media (only for saved properties) */}
+                  {prop.id && (
+                    <div className="flex items-start gap-2 flex-wrap">
+                      {prop.media.map((rel) => (
+                        <div key={rel.id} className="relative w-16 h-16 rounded-lg overflow-hidden group border border-border/30">
+                          <img
+                            src={rel.gallery_media.thumbnail_url || rel.gallery_media.url}
+                            className="w-full h-full object-cover"
+                            alt=""
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              onClick={() => detachMedia(rel.id)}
+                              className="text-white hover:text-red-400"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <MediaPickerDialog
+                        title="إرفاق صورة للخاصية"
+                        filterPrimaryType="image"
+                        onSelect={(item) => attachPropertyMedia(prop.id, item)}
+                        triggerButton={
+                          <button className="w-16 h-16 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
+                            <ImagePlus className="w-4 h-4" />
+                          </button>
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {!prop.id && (
+                    <p className="text-xs text-muted-foreground">💾 احفظ الخدمة أولاً لإضافة صور لهذه الخاصية</p>
+                  )}
                 </div>
               ))}
               {properties.length === 0 && (
@@ -254,15 +351,15 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
           </Card>
         </div>
 
-        {/* Sidebar Settings (Images & Media) */}
+        {/* Sidebar: Images & Service Gallery */}
         <div className="flex flex-col gap-6">
-          
+
           <Card className="glass-panel">
             <CardHeader>
               <CardTitle>الصور الرئيسية</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
-              
+
               <div className="flex flex-col gap-2">
                 <label className="text-sm flex justify-between">
                   <span>الصورة الرئيسية (Hero)</span>
@@ -276,8 +373,8 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
                   </div>
                 ) : (
                   <div className="h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-surface-container/50">
-                    <MediaPickerDialog 
-                      filterPrimaryType="image" 
+                    <MediaPickerDialog
+                      filterPrimaryType="image"
                       title="تعيين صورة رئيسية"
                       onSelect={(media) => setService({...service, main_image_url: media.url})}
                     />
@@ -298,8 +395,8 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
                   </div>
                 ) : (
                   <div className="h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-surface-container/50">
-                    <MediaPickerDialog 
-                      filterPrimaryType="image" 
+                    <MediaPickerDialog
+                      filterPrimaryType="image"
                       title="تعيين صورة غلاف"
                       onSelect={(media) => setService({...service, cover_image_url: media.url})}
                     />
@@ -314,32 +411,32 @@ export default function ServiceEditor({ params }: { params: Promise<{ id: string
             <Card className="glass-panel">
               <CardHeader className="flex flex-row justify-between items-center pb-2">
                 <CardTitle>معرض الخدمة</CardTitle>
-                <MediaPickerDialog 
+                <MediaPickerDialog
                   title="إرفاق"
                   triggerButton={
                     <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-full">
                       <Plus className="w-4 h-4" />
                     </Button>
                   }
-                  onSelect={attachMedia}
+                  onSelect={attachServiceMedia}
                 />
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
-                  {mediaRelations.map((rel) => {
-                    const thumb = rel.gallery_media.thumbnail_url || rel.gallery_media.url; // simplistic thumb fallback
+                  {serviceMedia.map((rel) => {
+                    const thumb = rel.gallery_media.thumbnail_url || rel.gallery_media.url;
                     return (
                       <div key={rel.id} className="relative aspect-square rounded-md overflow-hidden group">
-                        <img src={thumb} className="w-full h-full object-cover" />
+                        <img src={thumb} className="w-full h-full object-cover" alt="" />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full" onClick={() => detachMedia(rel.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                    )
+                    );
                   })}
-                  {mediaRelations.length === 0 && (
+                  {serviceMedia.length === 0 && (
                     <div className="col-span-2 text-center py-6 text-xs text-muted-foreground border border-dashed rounded-lg">
                       لم يتم إرفاق صور إضافية
                     </div>
