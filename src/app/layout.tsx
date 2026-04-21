@@ -37,9 +37,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <div className="absolute top-4 inline-end-4 z-50">
-              <ThemeToggle />
-            </div>
             {children}
           </TooltipProvider>
         </ThemeProvider>
