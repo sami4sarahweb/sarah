@@ -39,13 +39,20 @@ export function PublicFooter({ siteData }: PublicFooterProps) {
 
           {/* Brand Column */}
           <RevealOnScroll delay={0} className="flex flex-col gap-6">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/40 flex items-center justify-center p-[2px]">
-                <div className="w-full h-full bg-surface-container rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-primary rounded-full shadow-glow-sm animate-pulse-glow"></div>
-                </div>
+            <Link href="/" className="flex items-center gap-4 group">
+              <div className="relative w-20 h-20 transition-transform duration-300 group-hover:scale-105">
+                <img
+                  src="/logo_light.png"
+                  alt="مؤسسة سارة السهلي"
+                  className="w-full h-full object-contain block dark:hidden"
+                />
+                <img
+                  src="/logo_dark.png"
+                  alt="مؤسسة سارة السهلي"
+                  className="w-full h-full object-contain hidden dark:block"
+                />
               </div>
-              <span className="text-xl font-bold tracking-tight text-foreground">
+              <span className="text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
                 مؤسسة سارة السهلي
               </span>
             </Link>
@@ -68,7 +75,7 @@ export function PublicFooter({ siteData }: PublicFooterProps) {
                     {social.platform && socialIcons[social.platform.toLowerCase()] ? (
                       <FaIcon icon={socialIcons[social.platform.toLowerCase()]} className="w-4 h-4" />
                     ) : (
-                       <div className="w-2 h-2 rounded-full border border-current"></div>
+                      <div className="w-2 h-2 rounded-full border border-current"></div>
                     )}
                   </a>
                 ))}

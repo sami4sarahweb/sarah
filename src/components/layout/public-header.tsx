@@ -150,12 +150,20 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
           <div className="flex items-center justify-between">
 
             {/* Logo */}
-            <Link href="/" className="relative z-10 flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-primary/40 rounded-full blur-[8px] group-hover:bg-primary/60 transition-colors duration-500"></div>
-                <div className="w-3 h-3 bg-primary rounded-full relative z-10 shadow-glow-sm animate-pulse-glow"></div>
+            <Link href="/" className="relative z-10 flex items-center gap-3 group">
+              <div className="relative w-16 h-16 transition-transform duration-300 group-hover:scale-105">
+                <img 
+                  src="/logo_light.png" 
+                  alt="مؤسسة سارة السهلي" 
+                  className="w-full h-full object-contain block dark:hidden" 
+                />
+                <img 
+                  src="/logo_dark.png" 
+                  alt="مؤسسة سارة السهلي" 
+                  className="w-full h-full object-contain hidden dark:block" 
+                />
               </div>
-              <span className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
+              <span className="text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
                 مؤسسة سارة السهلي
               </span>
             </Link>
