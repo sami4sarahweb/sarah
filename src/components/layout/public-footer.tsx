@@ -7,6 +7,7 @@ import { faYoutube, faInstagram, faFacebook, faXTwitter, faTiktok } from "@forta
 import type { PublicSiteData } from "@/lib/queries/public-data";
 import { RevealOnScroll } from "@/components/animations/reveal-on-scroll";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { BuiltWithLove } from "@/components/BuiltWithLove";
 
 // Match DB platforms to FA brand icons
 const socialIcons: Record<string, IconDefinition> = {
@@ -170,6 +171,9 @@ export function PublicFooter({ siteData }: PublicFooterProps) {
             <Link href="/privacy" className="hover:text-primary transition-colors focus-ring-primary rounded-sm">سياسة الخصوصية</Link>
             <Link href="/terms" className="hover:text-primary transition-colors focus-ring-primary rounded-sm">الشروط والأحكام</Link>
           </div>
+        </div>
+        <div className="mt-8 flex justify-center pb-4">
+          <BuiltWithLove lang="ar" />
         </div>
       </div>
     </footer>
