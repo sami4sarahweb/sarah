@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Cookie, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { FaIcon } from "@/components/ui/fa-icon";
+import { faCookieBite, faXmark } from "@fortawesome/free-solid-svg-icons";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { GSAP_DURATION } from "@/lib/animations/gsap-utils";
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Only show if not previously accepted
@@ -18,32 +23,71 @@ export function CookieConsent() {
     }
   }, []);
 
+  useGSAP(() => {
+    if (isVisible && containerRef.current) {
+      gsap.from(containerRef.current, {
+        y: 100,
+        opacity: 0,
+        duration: GSAP_DURATION.NORMAL,
+        ease: "back.out(1.2)"
+      });
+    }
+  }, [isVisible]);
+
   const acceptCookies = () => {
-    localStorage.setItem("synthetic_pulse_cookie_consent", "accepted");
-    setIsVisible(false);
+    if (!containerRef.current) return;
+    
+    // Animate out before unmounting
+    gsap.to(containerRef.current, {
+      y: 50,
+      opacity: 0,
+      duration: GSAP_DURATION.FAST,
+      ease: "power2.in",
+      onComplete: () => {
+        localStorage.setItem("synthetic_pulse_cookie_consent", "accepted");
+        setIsVisible(false);
+      }
+    });
+  };
+
+  const declineCookies = () => {
+    if (!containerRef.current) return;
+    
+    gsap.to(containerRef.current, {
+      y: 50,
+      opacity: 0,
+      duration: GSAP_DURATION.FAST,
+      ease: "power2.in",
+      onComplete: () => {
+        setIsVisible(false);
+      }
+    });
   };
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-[60] animate-in slide-in-from-bottom-5 fade-in duration-500">
-      <div className="bg-surface-container-high/90 backdrop-blur-xl border border-border rounded-2xl shadow-2xl overflow-hidden relative group">
+    <div className="fixed bottom-4 inset-inline-4 md:inset-inline-auto md:end-4 md:w-96 z-[60]">
+      <div 
+        ref={containerRef}
+        className="glass-modal rounded-2xl shadow-float overflow-hidden relative group"
+      >
         
         {/* Glow Element */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-primary/20 transition-colors"></div>
+        <div className="absolute top-0 inset-inline-end-0 w-32 h-32 bg-primary/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-primary/20 transition-colors"></div>
 
         <button 
-          onClick={() => setIsVisible(false)}
-          className="absolute top-3 left-3 text-muted-foreground w-6 h-6 flex items-center justify-center rounded-full hover:bg-background transition-colors"
+          onClick={declineCookies}
+          className="absolute top-3 inset-inline-start-3 text-muted-foreground w-8 h-8 flex items-center justify-center rounded-full hover:bg-background transition-colors focus-ring-primary z-10"
           aria-label="إغلاق"
         >
-          <X className="w-4 h-4" />
+          <FaIcon icon={faXmark} className="w-4 h-4" />
         </button>
 
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 shrink-0 bg-primary/20 text-primary rounded-full flex items-center justify-center">
-              <Cookie className="w-5 h-5" />
+              <FaIcon icon={faCookieBite} className="w-5 h-5" />
             </div>
             <div>
               <h4 className="font-bold text-foreground mb-1">ملفات تعريف الارتباط</h4>
@@ -57,13 +101,13 @@ export function CookieConsent() {
           <div className="mt-5 flex gap-3">
             <button 
               onClick={acceptCookies}
-              className="flex-1 bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all text-black font-semibold text-sm py-2 rounded-xl"
+              className="flex-1 bg-primary hover:bg-primary-hover active-press hover-glow transition-all text-black font-semibold text-sm py-2.5 rounded-xl focus-ring-primary"
             >
               موافق وأكمل
             </button>
             <button 
-              onClick={() => setIsVisible(false)}
-              className="px-4 bg-background border border-border hover:bg-surface-container text-foreground text-sm py-2 rounded-xl transition-colors"
+              onClick={declineCookies}
+              className="px-6 bg-background border border-border hover:bg-surface-container active-press text-foreground text-sm py-2.5 rounded-xl transition-colors focus-ring-primary"
             >
               رفض
             </button>

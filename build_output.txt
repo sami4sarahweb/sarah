@@ -1,0 +1,24 @@
+
+> sarah@0.1.0 build
+> next build
+
+ظû▓ Next.js 16.2.4 (Turbopack)
+- Environments: .env
+
+ظأب The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+ظ£ô Compiled successfully in 32.5s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/(public)/contact/page.tsx:121:30
+Type error: Type '"slide-in"' is not assignable to type 'AnimationType | undefined'.
+
+  119 |           {/* Right: Contact Form */}
+  120 |           <div className="w-full lg:w-1/2">
+> 121 |             <AnimatedSection animation="slide-in" delay={0.4}>
+      |                              ^
+  122 |               <div className="glass-panel p-8 md:p-10 rounded-3xl border-t-4 border-t-pri...
+  123 |                 <div className="absolute top-0 end-0 w-40 h-40 bg-primary/10 rounded-full...
+  124 |                 
+Next.js build worker exited with code: 1 and signal: null

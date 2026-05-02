@@ -3,9 +3,15 @@ import { cookies } from "next/headers";
 import { Database } from "@/types/database.types";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star, Calendar, Quote, Briefcase, Video } from "lucide-react";
 import Link from "next/link";
+
+import { FaIcon } from "@/components/ui/fa-icon";
+import { faArrowLeft, faStar, faCalendarDays, faQuoteRight, faBriefcase, faVideo } from "@fortawesome/free-solid-svg-icons";
+import { AnimatedText } from "@/components/animations/animated-text";
+import { AnimatedSection } from "@/components/animations/animated-section";
+import { RevealOnScroll } from "@/components/animations/reveal-on-scroll";
+import { ParallaxLayer } from "@/components/animations/parallax-layer";
+import { MagneticButton } from "@/components/animations/magnetic-button";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -67,45 +73,58 @@ export default async function ProjectSlugPage({ params }: Props) {
     .map(m => m.gallery_media);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       
       {/* Hero Banner (Dynamic Parallax Layering) */}
-      <section className="relative pt-24 pb-12 overflow-hidden bg-black min-h-[50vh] flex items-center border-b border-border">
+      <section className="relative pt-24 pb-12 overflow-hidden bg-black min-h-[50vh] flex items-center border-b border-border/30">
         {project.cover_image_url || project.main_image_url ? (
-          <img 
-            src={project.cover_image_url || project.main_image_url || ''} 
-            alt={project.title} 
-            className="absolute inset-0 w-full h-full object-cover opacity-30 select-none pointer-events-none" 
-          />
+          <ParallaxLayer speed={-0.3} className="absolute inset-0">
+            <img 
+              src={project.cover_image_url || project.main_image_url || ''} 
+              alt={project.title} 
+              className="w-full h-full object-cover opacity-30 select-none pointer-events-none origin-center" 
+            />
+          </ParallaxLayer>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-surface-container to-background"></div>
         )}
         
         {/* Synthetic Pulse Linear Gradients overlaying the Hero */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-s rtl:bg-gradient-to-e from-background/80 via-transparent to-transparent"></div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <Link href="/projects" className="inline-flex mb-8">
-            <Button variant="outline" className="gap-2 bg-background/20 backdrop-blur-md text-foreground hover:bg-background/40">
-              <ArrowLeft className="w-4 h-4" />
-              العودة لسجل المشاريع
-            </Button>
-          </Link>
+        <div className="container-wide px-6 relative z-10">
+          <RevealOnScroll direction="inline-start" delay={0.1}>
+            <Link href="/projects" className="inline-flex mb-8">
+              <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/20 backdrop-blur-md text-foreground hover:bg-background/40 transition-colors border border-border/30 hover-border-glow">
+                <FaIcon icon={faArrowLeft} className="w-4 h-4 arrow-navigate" />
+                العودة لسجل المشاريع
+              </span>
+            </Link>
+          </RevealOnScroll>
 
-          <div className="max-w-4xl border-r-4 border-primary pr-6">
-            <Badge variant="secondary" className="mb-4 bg-primary/20 text-primary hover:bg-primary/30 border-primary/20">
-              مشروع مكتمل
-            </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-2xl text-neon-primary">
-              {project.title}
-            </h1>
+          <div className="max-w-4xl border-s-4 rtl:border-r-4 border-primary ps-6 rtl:pr-6">
+            <AnimatedSection animation="fade-inline" delay={0.2}>
+              <Badge variant="secondary" className="mb-4 bg-primary/20 text-primary border border-primary/20 hover:bg-primary/30">
+                مشروع مكتمل
+              </Badge>
+            </AnimatedSection>
+            
+            <AnimatedText
+              text={project.title}
+              type="words"
+              stagger={0.1}
+              tag="h1"
+              className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-2xl animate-text-glow"
+            />
             
             {project.event_date && (
-              <div className="flex items-center gap-2 text-muted-foreground bg-black/40 backdrop-blur-md inline-flex px-4 py-2 rounded-full border border-border/50">
-                <Calendar className="w-4 h-4 text-primary" />
-                <span className="pt-0.5">{new Date(project.event_date).toLocaleDateString('ar-SA')}</span>
-              </div>
+              <AnimatedSection animation="fade-up" delay={0.4}>
+                <div className="flex items-center gap-2 text-muted-foreground bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 inline-flex shadow-glow-sm">
+                  <FaIcon icon={faCalendarDays} className="w-4 h-4 text-primary" />
+                  <span className="pt-0.5 font-medium">{new Date(project.event_date).toLocaleDateString('ar-SA')}</span>
+                </div>
+              </AnimatedSection>
             )}
           </div>
         </div>
@@ -113,78 +132,85 @@ export default async function ProjectSlugPage({ params }: Props) {
 
       {/* Main Content Area */}
       <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+        <div className="container-wide px-6">
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
             
             {/* Column 1: Details & Testimonial */}
-            <div className="lg:col-span-2 space-y-12">
+            <div className="w-full lg:w-2/3 space-y-12">
               
               {/* Description Body */}
-              <div className="prose prose-invert prose-lg max-w-none text-muted-foreground leading-loose">
+              <AnimatedSection animation="fade-up" delay={0.1} className="prose prose-invert prose-lg max-w-none text-muted-foreground leading-loose">
                 <h2 className="text-2xl font-bold text-foreground mb-6">عن المشروع</h2>
+                <div className="w-16 h-1 bg-primary rounded-full mb-6 divider-glow"></div>
                 <div dangerouslySetInnerHTML={{ __html: (project.description || '').replace(/\n/g, '<br/>') }} />
-              </div>
+              </AnimatedSection>
 
               {/* High-End Testimonial Block */}
               {project.testimonial_text && (
-                <div className="relative mt-16 p-8 md:p-12 glass-panel rounded-3xl border border-secondary/20 luminous-shadow-primary overflow-hidden">
-                  <div className="absolute top-0 right-0 p-8 opacity-5">
-                    <Quote className="w-32 h-32 text-secondary" />
-                  </div>
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-6">
-                      {[1,2,3,4,5].map((star) => (
-                        <Star 
-                          key={star} 
-                          className={`w-6 h-6 ${
-                            project.testimonial_rating && project.testimonial_rating >= star 
-                              ? 'text-yellow-400 fill-yellow-400' 
-                              : 'text-muted-foreground/20'
-                          }`} 
-                        />
-                      ))}
+                <AnimatedSection animation="scale-in" delay={0.2}>
+                  <div className="relative mt-16 p-8 md:p-12 glass-panel rounded-3xl border border-secondary/20 shadow-glow-lg overflow-hidden group">
+                    <div className="absolute top-0 end-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                      <FaIcon icon={faQuoteRight} className="text-secondary opacity-20 text-[10rem]" />
                     </div>
                     
-                    <blockquote className="text-xl md:text-2xl italic font-medium leading-relaxed text-foreground mb-8">
-                      "{project.testimonial_text}"
-                    </blockquote>
-                    
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-lg shadow-lg">
-                        {(project.client_name || 'ع').charAt(0)}
-                      </div>
-                      <div>
-                        <div className="font-bold text-lg">{project.client_name || 'عميل'}</div>
-                        <div className="text-sm text-primary">صاحب الفعالية</div>
-                      </div>
+                    <div className="relative z-10">
+                      <AnimatedSection animation="stagger-children" className="flex items-center gap-2 mb-6">
+                        {[1,2,3,4,5].map((star) => (
+                          <div key={star}>
+                            <FaIcon 
+                              icon={faStar} 
+                              className={`w-6 h-6 ${
+                                project.testimonial_rating! >= star 
+                                  ? 'text-yellow-400' 
+                                  : 'text-muted-foreground/20'
+                              }`} 
+                            />
+                          </div>
+                        ))}
+                      </AnimatedSection>
+                      
+                      <AnimatedSection animation="fade-up" delay={0.3}>
+                        <blockquote className="text-xl md:text-2xl italic font-medium leading-relaxed text-foreground mb-8 text-neutral-200">
+                          "{project.testimonial_text}"
+                        </blockquote>
+                      </AnimatedSection>
+                      
+                      <AnimatedSection animation="fade-up" delay={0.4} className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-lg text-black shadow-glow-sm">
+                          {(project.client_name || 'ع').charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-bold text-lg text-white">{project.client_name || 'عميل'}</div>
+                          <div className="text-sm text-primary font-medium">صاحب الفعالية</div>
+                        </div>
+                      </AnimatedSection>
                     </div>
                   </div>
-                </div>
+                </AnimatedSection>
               )}
             </div>
 
             {/* Column 2: Sidebar (Services Used) */}
-            <div className="space-y-8">
-              <div className="glass-panel p-6 rounded-2xl sticky top-24">
+            <div className="w-full lg:w-1/3">
+              <AnimatedSection animation="fade-up" delay={0.2} className="glass-panel p-6 rounded-2xl sticky top-28 border border-border/30 shadow-2xl">
                 <div className="flex items-center gap-3 mb-6 border-b border-border/50 pb-4">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <Briefcase className="w-5 h-5" />
+                  <div className="p-2 bg-primary/10 rounded-lg shadow-glow-sm">
+                    <FaIcon icon={faBriefcase} className="w-5 h-5 text-primary" />
                   </div>
                   <h3 className="text-xl font-bold">الخدمات المنفذة</h3>
                 </div>
 
                 {services.length > 0 ? (
-                  <div className="flex flex-col gap-3">
+                  <AnimatedSection animation="stagger-children" className="flex flex-col gap-3">
                     {services.map((svc: any) => (
                       <Link key={svc.id} href={`/services/${svc.slug}`}>
-                        <div className="group flex items-center justify-between p-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-border/50 transition-colors">
+                        <div className="group flex items-center justify-between p-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-border/50 transition-all hover-border-glow">
                           <span className="font-medium text-sm group-hover:text-primary transition-colors">{svc.name}</span>
-                          <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-transform group-hover:-translate-x-1" />
+                          <FaIcon icon={faArrowLeft} className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-transform group-hover:-translate-x-1 rtl:group-hover:translate-x-1" />
                         </div>
                       </Link>
                     ))}
-                  </div>
+                  </AnimatedSection>
                 ) : (
                   <p className="text-sm text-muted-foreground">لم يتم تحديد خدمات معينة لهذا المشروع.</p>
                 )}
@@ -192,13 +218,13 @@ export default async function ProjectSlugPage({ params }: Props) {
                 <div className="mt-8 pt-6 border-t border-border/50">
                   <h4 className="font-bold mb-2">هل تخطط لفعالية مشابهة؟</h4>
                   <p className="text-sm text-muted-foreground mb-4">يسعدنا تقديم استشارة مجانية وتقديم عرض سعر مخصص.</p>
-                  <Link href="/contact" className="block">
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-black font-semibold">
+                  <MagneticButton strength={0.15}>
+                    <Link href="/contact" className="btn-cta w-full flex justify-center">
                       تواصل معنا الآن
-                    </Button>
-                  </Link>
+                    </Link>
+                  </MagneticButton>
                 </div>
-              </div>
+              </AnimatedSection>
             </div>
 
           </div>
@@ -208,10 +234,12 @@ export default async function ProjectSlugPage({ params }: Props) {
       {/* Gallery Section */}
       {mediaItems.length > 0 && (
         <section className="py-20 bg-surface-container/30 border-t border-border/20">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-10 text-center">لقطات من الحدث</h2>
+          <div className="container-wide px-6">
+            <AnimatedSection animation="fade-up" delay={0.1} className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">لقطات من الحدث</h2>
+            </AnimatedSection>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <AnimatedSection animation="stagger-children" delay={0.2} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {mediaItems.map((item: any) => {
                 const thumb = item.thumbnail_url || item.url;
                 let safeThumb = thumb;
@@ -231,8 +259,8 @@ export default async function ProjectSlugPage({ params }: Props) {
                     
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                       {item.type.includes('youtube') && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary/90 text-black rounded-full flex items-center justify-center shadow-lg">
-                          <Video className="w-6 h-6 ml-1" />
+                        <div className="absolute top-1/2 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary/90 text-black rounded-full flex items-center justify-center shadow-lg">
+                          <FaIcon icon={faVideo} className="w-5 h-5" />
                         </div>
                       )}
                       <h4 className="text-white font-semibold line-clamp-1">{item.title}</h4>
@@ -246,7 +274,7 @@ export default async function ProjectSlugPage({ params }: Props) {
                   </div>
                 )
               })}
-            </div>
+            </AnimatedSection>
           </div>
         </section>
       )}

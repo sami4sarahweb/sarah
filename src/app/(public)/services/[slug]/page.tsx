@@ -1,8 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { ArrowRight, CheckCircle2, Phone, Play, Image as ImageIcon, MoveLeft } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+
+import { FaIcon } from "@/components/ui/fa-icon";
+import { faArrowRight, faArrowLeft, faCircleCheck, faPhone, faPlay, faImage } from "@fortawesome/free-solid-svg-icons";
+import { AnimatedText } from "@/components/animations/animated-text";
+import { AnimatedSection } from "@/components/animations/animated-section";
+import { RevealOnScroll } from "@/components/animations/reveal-on-scroll";
+import { ParallaxLayer } from "@/components/animations/parallax-layer";
+import { MagneticButton } from "@/components/animations/magnetic-button";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -107,70 +114,94 @@ export default async function ServiceDetailPage({ params }: Props) {
     .limit(4);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
 
       {/* ═══════════════ HERO ═══════════════ */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
+      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden flex flex-col justify-center">
         <div className="absolute inset-0 z-0">
           {service.cover_image_url ? (
-            <img src={service.cover_image_url} alt={service.name} className="w-full h-full object-cover opacity-20 blur-sm" />
+            <ParallaxLayer speed={-0.3} className="w-full h-full">
+              <img src={service.cover_image_url} alt={service.name} className="w-full h-full object-cover opacity-20 blur-sm" />
+            </ParallaxLayer>
           ) : (
             <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background"></div>
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background"></div>
+          <div className="absolute inset-0 bg-dots opacity-30" />
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container-wide relative z-10 px-6">
           {/* Breadcrumb */}
-          <Link
-            href="/services"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm font-medium mb-8"
-          >
-            <ArrowRight className="w-4 h-4" />
-            العودة للخدمات
-          </Link>
+          <RevealOnScroll direction="inline-start" delay={0.1}>
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm font-medium mb-8"
+            >
+              <FaIcon icon={faArrowRight} className="w-4 h-4 arrow-navigate" />
+              العودة للخدمات
+            </Link>
+          </RevealOnScroll>
 
           <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center">
             {/* Text */}
             <div className="flex-1 space-y-6">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold tracking-wide">
-                تجهيز و تأجير
-              </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                {service.name}
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                {service.description}
-              </p>
-              <div className="pt-4 flex flex-wrap gap-3">
-                <Link
-                  href="/request-quote"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-primary hover:bg-primary/90 text-black font-bold transition-all duration-300 hover:scale-105 shadow-[0_0_25px_rgba(var(--primary),0.4)]"
-                >
-                  <Phone className="w-5 h-5" />
-                  احجز الآن
-                </Link>
-                <a
-                  href="#properties"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl border border-border hover:border-primary/50 text-foreground hover:text-primary font-bold transition-all duration-300"
-                >
-                  تفاصيل الخدمة
-                  <MoveLeft className="w-4 h-4" />
-                </a>
-              </div>
+              <AnimatedSection animation="fade-up" delay={0.2}>
+                <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold tracking-wide">
+                  تجهيز و تأجير
+                </span>
+              </AnimatedSection>
+              
+              <AnimatedText 
+                text={service.name}
+                type="chars"
+                stagger={0.03}
+                tag="h1"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
+              />
+              
+              <AnimatedSection animation="fade-up" delay={0.4}>
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                  {service.description}
+                </p>
+              </AnimatedSection>
+
+              <AnimatedSection animation="fade-up" delay={0.5}>
+                <div className="pt-4 flex flex-wrap gap-3">
+                  <MagneticButton strength={0.15}>
+                    <Link
+                      href="/request-quote"
+                      className="btn-primary"
+                    >
+                      <FaIcon icon={faPhone} className="w-4 h-4" />
+                      احجز الآن
+                    </Link>
+                  </MagneticButton>
+                  <MagneticButton strength={0.1}>
+                    <a
+                      href="#properties"
+                      className="btn-secondary group/btn"
+                    >
+                      تفاصيل الخدمة
+                      <FaIcon icon={faArrowLeft} className="w-4 h-4 transition-transform group-hover/btn:-translate-x-1 rtl:group-hover/btn:translate-x-1" />
+                    </a>
+                  </MagneticButton>
+                </div>
+              </AnimatedSection>
             </div>
 
             {/* Main Image */}
             <div className="w-full lg:w-5/12 shrink-0">
-              <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-surface-container-high border border-border/30 shadow-2xl group">
-                {service.main_image_url ? (
-                  <img src={service.main_image_url} alt={service.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon className="w-16 h-16 text-muted-foreground/20" />
-                  </div>
-                )}
-              </div>
+              <AnimatedSection animation="scale-in" delay={0.3} duration={1}>
+                <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-surface-container-high border border-border/30 shadow-2xl group">
+                  {service.main_image_url ? (
+                    <img src={service.main_image_url} alt={service.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <FaIcon icon={faImage} className="w-16 h-16 text-muted-foreground/20" />
+                    </div>
+                  )}
+                </div>
+              </AnimatedSection>
             </div>
           </div>
         </div>
@@ -178,29 +209,29 @@ export default async function ServiceDetailPage({ params }: Props) {
 
       {/* ═══════════════ DETAILS & PROPERTIES ═══════════════ */}
       <section className="py-20 bg-surface-container/30 border-t border-border/30" id="properties">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container-wide max-w-6xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
             {/* Details */}
-            <div className="space-y-6">
+            <AnimatedSection animation="fade-up" delay={0.1} className="space-y-6">
               <h2 className="text-3xl font-bold text-foreground">الشرح والتفاصيل</h2>
-              <div className="w-16 h-1 bg-primary rounded-full"></div>
+              <div className="w-16 h-1 bg-primary rounded-full divider-glow"></div>
               <div className="text-muted-foreground leading-loose whitespace-pre-line text-base">
                 {service.details || service.description || "لا يوجد تفاصيل إضافية مسجلة لهذه الخدمة."}
               </div>
-            </div>
+            </AnimatedSection>
 
             {/* Properties */}
             {properties.length > 0 && (
-              <div>
+              <AnimatedSection animation="fade-up" delay={0.2}>
                 <h3 className="text-2xl font-bold text-foreground mb-6">ما يشمل هذه الخدمة</h3>
-                <div className="flex flex-col gap-4">
+                <AnimatedSection animation="stagger-children" className="flex flex-col gap-4">
                   {properties.map((prop) => (
                     <div
                       key={prop.id}
-                      className="flex items-start gap-4 p-5 rounded-2xl glass-panel hover:border-primary/30 transition-all duration-300"
+                      className="flex items-start gap-4 p-5 rounded-2xl glass-panel hover-border-glow transition-all duration-300"
                     >
-                      <CheckCircle2 className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+                      <FaIcon icon={faCircleCheck} className="w-6 h-6 text-primary shrink-0 mt-0.5" />
                       <div>
                         <h4 className="font-bold text-foreground text-lg">{prop.name}</h4>
                         {prop.description && (
@@ -209,8 +240,8 @@ export default async function ServiceDetailPage({ params }: Props) {
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
+                </AnimatedSection>
+              </AnimatedSection>
             )}
 
           </div>
@@ -220,13 +251,13 @@ export default async function ServiceDetailPage({ params }: Props) {
       {/* ═══════════════ MEDIA GALLERY ═══════════════ */}
       {mediaItems.length > 0 && (
         <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
+          <div className="container-wide px-6">
+            <AnimatedSection animation="fade-up" delay={0.1} className="text-center mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-4">معرض الخدمة</h2>
               <p className="text-muted-foreground">تصفح صور وفيديوهات لأعمالنا السابقة</p>
-            </div>
+            </AnimatedSection>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <AnimatedSection animation="stagger-children" delay={0.2} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {mediaItems.map((item) => {
                 let thumbnailSrc = item.thumbnail_url || item.url;
                 if (item.type.includes("youtube") && !item.thumbnail_url) {
@@ -244,8 +275,8 @@ export default async function ServiceDetailPage({ params }: Props) {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                       {item.type.includes("youtube") && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary/90 rounded-full flex items-center justify-center shadow-lg">
-                          <Play className="w-6 h-6 text-black fill-black mr-[-2px]" />
+                        <div className="absolute top-1/2 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary/90 rounded-full flex items-center justify-center shadow-lg">
+                          <FaIcon icon={faPlay} className="w-5 h-5 text-black ms-1" />
                         </div>
                       )}
                       <h4 className="text-white font-semibold line-clamp-1">{item.title}</h4>
@@ -258,7 +289,7 @@ export default async function ServiceDetailPage({ params }: Props) {
                   </div>
                 );
               })}
-            </div>
+            </AnimatedSection>
           </div>
         </section>
       )}
@@ -266,26 +297,26 @@ export default async function ServiceDetailPage({ params }: Props) {
       {/* ═══════════════ RELATED SERVICES ═══════════════ */}
       {otherServices && otherServices.length > 0 && (
         <section className="py-20 border-t border-border/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
+          <div className="container-wide px-6">
+            <AnimatedSection animation="fade-up" delay={0.1} className="text-center mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-4">خدمات أخرى قد تهمك</h2>
               <p className="text-muted-foreground">تصفح بقية خدماتنا المتخصصة في تجهيز الفعاليات</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            </AnimatedSection>
+            <AnimatedSection animation="stagger-children" delay={0.2} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {otherServices.map((s) => (
                 <Link
                   key={s.slug}
                   href={`/services/${s.slug}`}
-                  className="group glass-panel rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+                  className="group card-interactive"
                 >
-                  <div className="h-32 bg-gradient-to-br from-surface-container-high to-surface-container overflow-hidden flex items-center justify-center">
+                  <div className="h-32 -mx-6 -mt-6 mb-4 bg-gradient-to-br from-surface-container-high to-surface-container overflow-hidden flex items-center justify-center rounded-t-2xl">
                     {s.main_image_url ? (
                       <img src={s.main_image_url} alt={s.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
                     ) : (
-                      <ImageIcon className="w-8 h-8 text-primary/20" />
+                      <FaIcon icon={faImage} className="w-8 h-8 text-primary/20" />
                     )}
                   </div>
-                  <div className="p-4">
+                  <div>
                     <h3 className="font-bold text-foreground group-hover:text-primary transition-colors text-sm mb-1">{s.name}</h3>
                     {s.description && (
                       <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>
@@ -293,28 +324,37 @@ export default async function ServiceDetailPage({ params }: Props) {
                   </div>
                 </Link>
               ))}
-            </div>
+            </AnimatedSection>
           </div>
         </section>
       )}
 
       {/* ═══════════════ CTA ═══════════════ */}
-      <section className="py-20 relative overflow-hidden border-t border-border/30">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5 pointer-events-none"></div>
-        <div className="container mx-auto px-4 relative z-10 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-            هل تتطلع لاستئجار <span className="text-primary">{service.name}</span>؟
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
-            تواصل معنا لنضع لك خطة تجهيز مخصصة تناسب احتياجات فعاليتك
-          </p>
-          <Link
-            href="/request-quote"
-            className="inline-flex items-center gap-3 px-10 py-4 rounded-xl bg-primary hover:bg-primary/90 text-black font-bold text-lg transition-all duration-300 hover:scale-105 shadow-[0_0_40px_rgba(var(--primary),0.5)]"
-          >
-            اطلب عرض سعر مجاناً
-            <MoveLeft className="w-5 h-5" />
-          </Link>
+      <section className="py-20 relative overflow-hidden border-t border-border/30 flex justify-center">
+        <ParallaxLayer speed={-0.3} className="absolute inset-0 pointer-events-none">
+          <div className="w-full h-full bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5" />
+        </ParallaxLayer>
+        <div className="container-narrow px-6 relative z-10 text-center">
+          <AnimatedSection animation="fade-up" delay={0.1}>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              هل تتطلع لاستئجار <span className="text-primary">{service.name}</span>؟
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
+              تواصل معنا لنضع لك خطة تجهيز مخصصة تناسب احتياجات فعاليتك
+            </p>
+          </AnimatedSection>
+          
+          <AnimatedSection animation="scale-in" delay={0.2}>
+            <MagneticButton strength={0.2}>
+              <Link
+                href="/request-quote"
+                className="btn-cta"
+              >
+                اطلب عرض سعر مجاناً
+                <FaIcon icon={faArrowLeft} className="w-5 h-5 arrow-navigate" />
+              </Link>
+            </MagneticButton>
+          </AnimatedSection>
         </div>
       </section>
 

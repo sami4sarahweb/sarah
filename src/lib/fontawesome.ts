@@ -1,0 +1,108 @@
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faStar,
+  faPhone,
+  faEnvelope,
+  faLocationDot,
+  faArrowLeft,
+  faArrowRight,
+  faChevronDown,
+  faBars,
+  faXmark,
+  faComments,
+  faPlay,
+  faPaperPlane,
+  faCircleCheck,
+  faGem,
+  faQuoteRight,
+  faTrophy,
+  faCalendarDays,
+  faBriefcase,
+  faVideo,
+  faCookieBite,
+  faWandMagic,
+  faHandshake,
+  faCogs,
+  faBoxesStacked,
+  faChair,
+  faCouch,
+  faLightbulb,
+  faMusic,
+  faRing,
+  faBolt,
+  faUtensils,
+  faGripVertical,
+  faCampground,
+  faImage,
+  IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
+
+import {
+  faYoutube,
+  faInstagram,
+  faFacebook,
+  faXTwitter,
+  faTiktok,
+  faWhatsapp,
+} from "@fortawesome/free-brands-svg-icons";
+
+// Register all icons
+library.add(
+  faStar,
+  faPhone,
+  faEnvelope,
+  faLocationDot,
+  faArrowLeft,
+  faArrowRight,
+  faChevronDown,
+  faBars,
+  faXmark,
+  faComments,
+  faPlay,
+  faPaperPlane,
+  faCircleCheck,
+  faGem,
+  faQuoteRight,
+  faTrophy,
+  faCalendarDays,
+  faBriefcase,
+  faVideo,
+  faCookieBite,
+  faWandMagic,
+  faHandshake,
+  faCogs,
+  faBoxesStacked,
+  faChair,
+  faCouch,
+  faLightbulb,
+  faMusic,
+  faRing,
+  faBolt,
+  faUtensils,
+  faGripVertical,
+  faCampground,
+  faImage,
+  faYoutube,
+  faInstagram,
+  faFacebook,
+  faXTwitter,
+  faTiktok,
+  faWhatsapp
+);
+
+// Map database icon names to actual FontAwesome icons
+export const iconMap: Record<string, IconDefinition> = {
+  // Common service icons mapped to Free Solid equivalents
+  "chair": faChair,
+  "rocking-chair": faChair, // legacy
+  "couch": faCouch,
+  "tent": faCampground,
+  "lightbulb": faLightbulb,
+  "music": faMusic,
+  "ring": faRing,
+  "bolt": faBolt,
+  "utensils": faUtensils,
+  "layer-group": faBoxesStacked, // fallback
+  "stage": faGem, // Theater masks is pro, fallback to gem
+  "tree": faGem, // Fallback
+};

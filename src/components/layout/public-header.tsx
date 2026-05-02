@@ -3,9 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Phone, MessageCircle, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { PublicSiteData } from "@/lib/queries/public-data";
+import { FaIcon } from "@/components/ui/fa-icon";
+import { faBars, faXmark, faPhone, faChevronDown, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { getDirectionMultiplier } from "@/lib/animations/gsap-utils";
 
 interface PublicHeaderProps {
   siteData: PublicSiteData;
@@ -16,7 +21,12 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  
+  const headerRef = useRef<HTMLElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownContentRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  
   const pathname = usePathname();
 
   const { phone, whatsapp, services } = siteData;
@@ -33,21 +43,23 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
     { label: "تواصل معنا", href: "/contact" },
   ];
 
+  // Scroll handler
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
+  // Close menus on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setServicesOpen(false);
   }, [pathname]);
 
-  // Close services dropdown when clicking outside
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -58,23 +70,90 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // GSAP Animations
+  useGSAP(() => {
+    // Header entrance animation
+    if (headerRef.current) {
+      gsap.from(headerRef.current, {
+        y: -100,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out"
+      });
+    }
+  }, { scope: headerRef });
+
+  // Dropdown animation
+  useGSAP(() => {
+    if (dropdownContentRef.current) {
+      if (servicesOpen) {
+        gsap.to(dropdownContentRef.current, {
+          scaleY: 1,
+          opacity: 1,
+          duration: 0.4,
+          ease: "back.out(1.7)",
+          display: "block",
+          transformOrigin: "top"
+        });
+      } else {
+        gsap.to(dropdownContentRef.current, {
+          scaleY: 0,
+          opacity: 0,
+          duration: 0.3,
+          ease: "power2.in",
+          onComplete: () => {
+            gsap.set(dropdownContentRef.current, { display: "none" });
+          }
+        });
+      }
+    }
+  }, [servicesOpen]);
+
+  // Mobile Menu animation
+  useGSAP(() => {
+    if (mobileMenuRef.current) {
+      const dirMap = getDirectionMultiplier();
+      if (mobileMenuOpen) {
+        gsap.to(mobileMenuRef.current, {
+          x: 0,
+          duration: 0.5,
+          ease: "power4.out"
+        });
+      } else {
+        gsap.to(mobileMenuRef.current, {
+          x: 100 * dirMap + "%",
+          duration: 0.4,
+          ease: "power3.in"
+        });
+      }
+    }
+  }, [mobileMenuOpen]);
+
+  // Set initial state for mobile menu via direction multiplier
+  useEffect(() => {
+     if (mobileMenuRef.current && !mobileMenuOpen) {
+        gsap.set(mobileMenuRef.current, { x: getDirectionMultiplier() > 0 ? "100%" : "-100%" })
+     }
+  }, []);
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        ref={headerRef}
+        className={`fixed top-0 inset-x-0 w-full z-50 transition-colors duration-300 ${
           isScrolled
-            ? "bg-background/80 backdrop-blur-xl border-b border-border/50 py-3 shadow-lg"
+            ? "glass-navbar py-3 shadow-lg"
             : "bg-transparent py-5"
         }`}
       >
-        <div className="container mx-auto px-4 lg:px-8">
+        <div className="container-wide">
           <div className="flex items-center justify-between">
 
             {/* Logo */}
             <Link href="/" className="relative z-10 flex items-center gap-2 group">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-primary/40 rounded-full blur-[8px] group-hover:bg-primary/60 transition-colors duration-500"></div>
-                <div className="w-3 h-3 bg-primary rounded-full relative z-10 shadow-[0_0_10px_rgba(var(--primary),0.8)]"></div>
+                <div className="w-3 h-3 bg-primary rounded-full relative z-10 shadow-glow-sm animate-pulse-glow"></div>
               </div>
               <span className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
                 مؤسسة سارة السهلي
@@ -82,8 +161,7 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-6">
-              {/* Home link */}
+            <nav className="hidden xl:flex items-center gap-6">
               <NavLink href="/" label="الرئيسية" pathname={pathname} />
 
               {/* Services Dropdown */}
@@ -95,19 +173,20 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
                   }`}
                 >
                   الخدمات
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
+                  <FaIcon 
+                    icon={faChevronDown} 
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} 
+                  />
                   {pathname.startsWith("/services") && (
-                    <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary),0.5)]"></span>
+                    <span className="absolute -bottom-1.5 inset-inline-0 h-[2px] bg-primary rounded-full shadow-glow-sm"></span>
                   )}
                 </button>
 
                 {/* Dropdown Panel */}
                 <div
-                  className={`absolute top-full right-0 mt-4 w-72 rounded-xl bg-background/95 backdrop-blur-xl border border-border/50 shadow-2xl overflow-hidden transition-all duration-200 origin-top ${
-                    servicesOpen
-                      ? "opacity-100 scale-100 translate-y-0"
-                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-                  }`}
+                  ref={dropdownContentRef}
+                  style={{ display: 'none', transform: 'scaleY(0)', opacity: 0 }}
+                  className="absolute top-full end-0 mt-4 w-72 rounded-xl glass-modal shadow-float overflow-hidden origin-top"
                 >
                   <div className="p-2 max-h-80 overflow-y-auto custom-scrollbar">
                     {services.map((service) => (
@@ -138,7 +217,7 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
             </nav>
 
             {/* Desktop Quick Actions */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden xl:flex items-center gap-3">
               <ThemeToggle />
 
               <div className="h-6 w-[1px] bg-border mx-1"></div>
@@ -146,10 +225,10 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
               {/* Call */}
               <a
                 href={phoneHref}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high border border-border/50 text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-all duration-300 hover:scale-105"
+                className="btn-icon"
                 aria-label="اتصل بنا"
               >
-                <Phone className="w-4 h-4" />
+                <FaIcon icon={faPhone} className="w-4 h-4" />
               </a>
 
               {/* WhatsApp */}
@@ -157,22 +236,23 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
                 href={whatsappHref}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 px-5 h-10 rounded-full bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366] hover:text-black hover:shadow-[0_0_15px_rgba(37,211,102,0.4)] transition-all duration-300 font-semibold text-sm hover:scale-105"
+                className="flex items-center gap-2 px-5 h-10 rounded-full bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366] hover:text-black hover:shadow-[0_0_15px_rgba(37,211,102,0.4)] transition-all duration-300 font-semibold text-sm hover-scale animate-float"
+                style={{ animationDuration: '4s' }}
               >
-                <MessageCircle className="w-4 h-4" />
+                <FaIcon icon={faWhatsapp} className="w-4 h-4" />
                 <span>واتساب</span>
               </a>
             </div>
 
             {/* Mobile Menu Toggle */}
-            <div className="flex lg:hidden items-center gap-3 relative z-10">
+            <div className="flex xl:hidden items-center gap-3 relative z-10">
               <ThemeToggle />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="w-10 h-10 flex items-center justify-center rounded-md text-foreground hover:bg-surface-container-high transition-colors"
                 aria-label="Toggle menu"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <FaIcon icon={faXmark} className="w-5 h-5" /> : <FaIcon icon={faBars} className="w-5 h-5" />}
               </button>
             </div>
 
@@ -182,9 +262,9 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
 
       {/* Mobile Navigation Overlay */}
       <div
-        className={`fixed inset-0 bg-background/95 backdrop-blur-xl z-40 lg:hidden transition-transform duration-300 ease-in-out ${
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        ref={mobileMenuRef}
+        className="fixed inset-0 bg-background/95 backdrop-blur-xl z-40 xl:hidden"
+        style={{ transform: "translateX(100%)" }} // Will be overridden by GSAP on mount based on RTL
       >
         <div className="flex flex-col h-full pt-24 pb-8 px-6 overflow-y-auto">
           <nav className="flex flex-col gap-4 flex-1">
@@ -199,14 +279,14 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
                 }`}
               >
                 الخدمات
-                <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
+                <FaIcon icon={faChevronDown} className={`w-5 h-5 transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
               </button>
               <div
                 className={`overflow-hidden transition-all duration-300 ${
                   mobileServicesOpen ? "max-h-[500px] mt-3" : "max-h-0"
                 }`}
               >
-                <div className="flex flex-col gap-1 pr-4 border-r-2 border-primary/30">
+                <div className="flex flex-col gap-1 pe-4 border-e-2 border-primary/30">
                   {services.map((service) => (
                     <Link
                       key={service.slug}
@@ -218,9 +298,9 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
                   ))}
                   <Link
                     href="/services"
-                    className="text-base font-semibold text-primary py-1.5"
+                    className="text-base font-semibold text-primary py-1.5 flex items-center gap-2"
                   >
-                    عرض جميع الخدمات ←
+                    عرض جميع الخدمات <FaIcon icon={faArrowLeft} className="arrow-navigate text-sm" />
                   </Link>
                 </div>
               </div>
@@ -238,14 +318,14 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
               rel="noreferrer"
               className="flex items-center justify-center gap-3 w-full h-14 rounded-xl bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366] hover:text-black transition-all duration-300 font-bold text-lg"
             >
-              <MessageCircle className="w-6 h-6" />
+              <FaIcon icon={faWhatsapp} className="w-6 h-6" />
               تواصل عبر الواتساب
             </a>
             <a
               href={phoneHref}
               className="flex items-center justify-center gap-3 w-full h-14 rounded-xl bg-surface-container-high border border-border text-foreground hover:bg-primary hover:text-black transition-all duration-300 font-bold text-lg"
             >
-              <Phone className="w-6 h-6" />
+              <FaIcon icon={faPhone} className="w-6 h-6" />
               اتصال مباشر
             </a>
           </div>
@@ -266,7 +346,7 @@ function NavLink({ href, label, pathname }: { href: string; label: string; pathn
     >
       {label}
       {isActive && (
-        <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary),0.5)]"></span>
+        <span className="absolute -bottom-1.5 inset-inline-0 h-[2px] bg-primary rounded-full shadow-glow-sm"></span>
       )}
     </Link>
   );

@@ -4,6 +4,10 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+config.autoAddCss = false;
+
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
   variable: "--font-ibm-plex-arabic",
   subsets: ["arabic", "latin"],
@@ -13,8 +17,8 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
-  title: "Synthetic Pulse App",
-  description: "A high-performance bio-interface",
+  title: "مؤسسة سارة السهلي",
+  description: "مؤسسة سارة السهلي لتجهيز وتأجير الحفلات والفعاليات والمناسبات وتأجير لوازم",
 };
 
 export default function RootLayout({
