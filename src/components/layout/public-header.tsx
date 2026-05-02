@@ -345,7 +345,9 @@ export function PublicHeader({ siteData }: PublicHeaderProps) {
         href={whatsappHref}
         target="_blank"
         rel="noreferrer"
-        className="xl:hidden fixed bottom-6 end-6 z-[60] flex items-center gap-2 px-5 h-12 rounded-full bg-[#25D366]/15 backdrop-blur-md text-[#25D366] border border-[#25D366]/40 shadow-[0_0_20px_rgba(37,211,102,0.2)] active:scale-95 transition-all duration-300 font-bold text-sm animate-float"
+        className={`xl:hidden fixed bottom-6 end-6 z-[60] flex items-center gap-2 px-5 h-12 rounded-full bg-[#25D366]/15 backdrop-blur-md text-[#25D366] border border-[#25D366]/40 shadow-[0_0_20px_rgba(37,211,102,0.2)] active:scale-95 transition-all duration-300 font-bold text-sm animate-float ${
+          mobileMenuOpen ? "opacity-0 pointer-events-none translate-y-10" : "opacity-100"
+        }`}
         style={{ animationDuration: '4s' }}
         aria-label="تواصل عبر الواتساب"
       >
