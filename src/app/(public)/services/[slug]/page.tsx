@@ -153,8 +153,8 @@ export default async function ServiceDetailPage({ params }: Props) {
               
               <AnimatedText 
                 text={service.name}
-                type="chars"
-                stagger={0.03}
+                type="words"
+                stagger={0.1}
                 tag="h1"
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
               />
