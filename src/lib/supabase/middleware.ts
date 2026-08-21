@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { sanitizeRedirectUrl } from '@/lib/auth/redirect'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -38,26 +39,55 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes require authentication and admin role
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    const userRole = user?.app_metadata?.role || user?.user_metadata?.role
-    
+  const pathname = request.nextUrl.pathname
+
+  // Protected administrative API endpoints
+  if (pathname.startsWith('/api/admin')) {
+    if (!user || user.app_metadata?.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    return supabaseResponse
+  }
+
+  // Protected dashboard routes require authentication and admin role in app_metadata
+  if (pathname.startsWith('/dashboard')) {
     if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
-    } else if (userRole !== 'admin') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/'
-      return NextResponse.redirect(url)
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      const returnDestination = `${pathname}${request.nextUrl.search}`
+      redirectUrl.searchParams.set('returnUrl', returnDestination)
+
+      const response = NextResponse.redirect(redirectUrl, { status: 307 })
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        response.cookies.set(cookie)
+      })
+      return response
+    }
+
+    if (user.app_metadata?.role !== 'admin') {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/'
+      redirectUrl.search = ''
+
+      const response = NextResponse.redirect(redirectUrl)
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        response.cookies.set(cookie)
+      })
+      return response
     }
   }
 
   // Redirect authenticated users away from auth pages
-  if (user && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup'))) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  if (user && (pathname.startsWith('/login') || pathname.startsWith('/signup'))) {
+    const rawReturnUrl = request.nextUrl.searchParams.get('returnUrl')
+    const target = sanitizeRedirectUrl(rawReturnUrl, '/dashboard')
+    const redirectUrl = new URL(target, request.url)
+
+    const response = NextResponse.redirect(redirectUrl)
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie)
+    })
+    return response
   }
 
   return supabaseResponse

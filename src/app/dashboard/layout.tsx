@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { createClient } from "@/lib/supabase/server"
@@ -9,6 +10,14 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  if (user.app_metadata?.role !== 'admin') {
+    redirect('/')
+  }
 
   return (
     <SidebarProvider>

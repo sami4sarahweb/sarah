@@ -7,17 +7,21 @@ import { Button } from '@/components/ui/button'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
+import { sanitizeRedirectUrl } from '@/lib/auth/redirect'
+
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; message?: string }>
+  searchParams: Promise<{ error?: string; message?: string; returnUrl?: string }>
 }) {
   const params = await searchParams
+  const returnUrl = sanitizeRedirectUrl(params.returnUrl, '/dashboard')
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <form action={signup}>
+          <input type="hidden" name="returnUrl" value={returnUrl} />
           <CardHeader>
             <CardTitle className="text-2xl">إنشاء حساب</CardTitle>
             <CardDescription>
@@ -48,7 +52,10 @@ export default async function SignupPage({
             <Button className="w-full" type="submit">إنشاء حساب</Button>
             <div className="text-sm text-center text-muted-foreground w-full">
               لديك حساب بالفعل؟{' '}
-              <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+              <Link
+                href={params.returnUrl ? `/login?returnUrl=${encodeURIComponent(params.returnUrl)}` : '/login'}
+                className="underline underline-offset-4 hover:text-primary"
+              >
                 تسجيل الدخول
               </Link>
             </div>
