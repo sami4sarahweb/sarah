@@ -7,6 +7,7 @@ import { AnimatedText } from "@/components/animations/animated-text";
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { ParallaxLayer } from "@/components/animations/parallax-layer";
 import { MagneticButton } from "@/components/animations/magnetic-button";
+import { trackLeadConversion } from "@/lib/gtag";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function ContactPage() {
     setTimeout(() => {
       setLoading(false);
       setSuccess(true);
+      trackLeadConversion(1.0, "SAR");
       setFormData({ name: "", email: "", subject: "", message: "" });
       
       // Auto dismiss success MSG

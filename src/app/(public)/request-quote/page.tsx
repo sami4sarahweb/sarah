@@ -9,6 +9,7 @@ import { faWandMagicSparkles, faPhone, faCalendarDays, faPaperPlane, faCircleChe
 import { AnimatedText } from "@/components/animations/animated-text";
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { MagneticButton } from "@/components/animations/magnetic-button";
+import { trackLeadConversion } from "@/lib/gtag";
 
 interface ServiceOption {
   id: string;
@@ -83,6 +84,7 @@ export default function RequestQuotePage() {
       }
 
       setSuccess(true);
+      trackLeadConversion(1.0, "SAR");
     } catch (err) {
       console.error(err);
       alert("حدث خطأ أثناء إرسال طلبك. يرجى المحاولة لاحقاً أو التواصل معنا عبر الهاتف.");
