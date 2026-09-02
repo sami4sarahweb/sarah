@@ -54,7 +54,7 @@ Code in `src/app/(auth)/`, `src/app/dashboard/`, `src/middleware.ts`
 ### 1. Middleware auth scoping · in-progress
 Restrict Supabase Auth network calls in middleware strictly to `/dashboard` routes and auth entrypoints, letting all public visitors bypass remote auth roundtrips completely.
 **Done when:** public pages trigger zero auth API roundtrips in middleware, and initial server response headers arrive in under 100ms.
-- [x] Design it (spec): [0001](../specs/0001-middleware-auth-scoping.md)
+- [x] Design it (spec): [0001](../specs/0001-middleware-auth-scoping/index.md)
 - [x] Build it: `/develop middleware auth scoping`
   - [x] Scope middleware config matcher to administrative, auth, and callback routes (AC-1, AC-2)
   - [x] Implement redirect sanitizer and preserve returnUrl through login and auth callbacks (AC-3, AC-4, AC-5)
